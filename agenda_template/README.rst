@@ -1,100 +1,71 @@
 ============================
-django-theroomofcode-project
+django-schedule app fork from django-schedule library
 ============================
 
-A project template for Django 1.7.
+ h1. Django-schedule
 
-To use this project follow these steps:
+A calendaring/scheduling application, featuring:
 
-#. Create your working environment
-#. Install Django
-#. Create the new project using the django-cuble template
-#. Install additional dependencies
-#. Use the Django admin to create the project
+ * one-time and recurring events
+ * calendar exceptions (occurrences changed or cancelled)
+ * occurrences accessible through Event API and Period API
+ * relations of events to generic objects
+ * ready to use, nice user interface
+ * view day, week, month, three months and year
+ * project sample which can be launched immediately and reused in your project
 
-*note: these instructions show creation of a project called "potato". You
-should replace this name with the actual name of your project.*
+See see "wiki page":http://wiki.github.com/thauber/django-schedule for more.
 
-Working Environment
-===================
+h2. Installation
 
-You have several options in setting up your working environment. We recommend
-using virtualenv to separate the dependencies of your project from your system's
-python environment. If on Linux or Mac OS X, you can also use virtualenvwrapper to help manage multiple virtualenvs across different projects.
+Download the code; put in into your project's directory or run <pre>python setup.py install</pre> to install system-wide.
 
-Virtualenv Only
----------------
+REQUIREMENTS: python-vobject (comes with most distribution as a package).
 
-First, make sure you are using virtualenv (http://www.virtualenv.org). Once
-that's installed, create your virtualenv::
+h2. Settings.py
 
-    $ virtualenv --distribute potato
+h3. REQUIRED
 
-You will also need to ensure that the virtualenv has the project directory
-added to the path. Adding the project directory will allow `django-admin.py` to
-be able to change settings using the `--settings` flag.
+INSTALLED_APPS - add: 
+    'schedule'
 
-Virtualenv with virtualenvwrapper
----------------------------------
+TEMPLATE_CONTEXT_PROCESSORS - add:
+    "django.core.context_processors.request"
 
-In Linux and Mac OSX, you can install virtualenvwrapper (http://virtualenvwrapper.readthedocs.org/en/latest/),
-which will take care of managing your virtual environments and adding the
-project path to the `site-directory` for you::
+h4. Optional
 
-    $ mkdir potato
-    $ mkvirtualenv -a potato potato-dev
-    $ cd potato && add2virtualenv `pwd`
+FIRST_DAY_OF_WEEK
 
-Using virtualenvwrapper with Windows
-------------------------------------
+This setting determines which day of the week your calendar begins on if your locale doesn't already set it. Default is 0, which is Sunday.
 
-There is a special version of virtualenvwrapper for use with Windows (https://pypi.python.org/pypi/virtualenvwrapper-win).::
+OCCURRENCE_CANCEL_REDIRECT
 
-    > mkdir potato
-    > mkvirtualenv potato-dev
-    > add2virtualenv potato
+This setting controls the behavior of :func:`Views.get_next_url`. If set, all calendar modifications will redirect here (unless there is a `next` set in the request.)
 
+SHOW_CANCELLED_OCCURRENCES
 
-Installing Django
-=================
+This setting controls the behavior of :func:`Period.classify_occurence`. If True, then occurences that have been cancelled will be displayed with a css class of canceled, otherwise they won't appear at all.
 
-To install Django in the new virtual environment, run the following command::
+Defaults to False
 
-    $ pip install django
+CHECK_PERMISSION_FUNC
 
-Creating your project
-=====================
+This setting controls the callable used to determine if a user has permission to edit an event or occurance. The callable must take the object and the user and return a boolean. 
 
-To create a new Django project called '**potato**' using
-django-cuble-project, run the following command::
+Default:
+<pre>
+    check_edit_permission(ob, user):
+        return user.is_authenticated()
+</pre>
 
-    $ django-admin.py startproject --template=ZIP OF THIS REPO --extension=py,rst,html,less,coffee potato_project
+If ob is None, then the function is checking for permission to add new events
 
-Installation of Dependencies
-============================
+GET_EVENTS_FUNC
 
-Depending on where you are installing dependencies:
+This setting controls the callable that gets all events for calendar display. The callable must take the request and the calendar and return a `QuerySet` of events. Modifying this setting allows you to pull events from multiple calendars or to filter events based on permissions
 
-In development::
-
-    $ pip install -r requirements/local.txt
-
-For production::
-
-    $ pip install -r requirements.txt
-
-*note: We install production requirements this way because many Platforms as a
-Services expect a requirements.txt file in the root of projects.*
-
-Acces to admin.
-==========================
-
-    $ cd gloudio/
-
-    $ python manage.py migrate --settings=gloudio.settings.local 
-
-    $ python manage.py runserver --settings=gloudio.settings.local 
-
-    $ python manage.py createsuperuser --settings=gloudio.settings.local 
-
-    $ python manage.py runserver --settings=gloudio.settings.local
+Default:
+<pre>
+    get_events(request, calendar):
+        return calendar.event_set.all()
+</pre>
